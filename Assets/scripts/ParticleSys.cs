@@ -30,7 +30,7 @@ public class ParticleSys : MonoBehaviour
     private Material squareMaterial;
     private Sprite squareSprite;
 
-    void Awake()
+    void Start()
     {
         CreateSquareAssets();
         InitPool();
