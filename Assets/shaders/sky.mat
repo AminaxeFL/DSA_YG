@@ -41,6 +41,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _BelowFade: 0.45
+    - _Bevel: 0.62
     - _CloudCoverage: 0.5
     - _CloudDensity: 62
     - _CloudDetail: 0.58
@@ -49,30 +51,110 @@ Material:
     - _CloudSpeed: 1
     - _CloudThickness: 0.24
     - _EnableExternalAlpha: 0
-    - _FadeEnd: 10.4
-    - _FadeStart: -7.95
+    - _FadeEnd: 10
+    - _FadeStart: -8
     - _FarDarken: 1
-    - _HorizonHeight: -0.1
+    - _FillDark: 0.31
+    - _FillFreq: 16.75
+    - _FillLight: 1.65
+    - _FillNoiseDriftY: 0
+    - _FillNoiseSpeed: 0
+    - _FillSteps: 16
+    - _FrontBase: 0.51
+    - _FrontHeight: 0.21
+    - _FrontRough: 0.4
+    - _FrontScale: 1.8
+    - _GrassDensity: 0.423
+    - _GrassHeight: 0.01
+    - _GrassScale: 1123.1
+    - _GrassSpeed: 0.35
+    - _GroundDark: 0.35
+    - _GroundDetail: 5
+    - _GroundScale: 3
+    - _GroundSpeed: 0.3
+    - _GroundStrata: 6
+    - _GroundStrataAmt: 0.25
+    - _GroundTop: 0.14
+    - _HillBevel: 0.03
+    - _HillFadeDepth: 0.53
+    - _HillFarHeight: -0.39
+    - _HillFarRough: 0.3
+    - _HillFarScale: 1.2
+    - _HillFarSpeed: 0.15
+    - _HillNearHeight: 0.75
+    - _HillNearRough: 0.68
+    - _HillNearScale: 0.58
+    - _HillNearSpeed: 1.27
+    - _HillThick: 12.15
+    - _HorizonHeight: -0.33
     - _LightAngle: 0.02
-    - _LightScatter: -0.66
-    - _MarchSteps: 32
+    - _LightScatter: 0
+    - _MarchSteps: 13.8
+    - _MoonGlow: 0.11
+    - _MoonGlowSize: 0.44
+    - _MoonIntensity: 1
+    - _MoonSize: 0.042
+    - _NightStrength: 1
+    - _NoiseGain: 0.5
+    - _NoiseLacunarity: 4.06
+    - _NoiseOctaves: 4
+    - _ParallaxClouds: 0.008
+    - _ParallaxFront: 0.04
+    - _ParallaxHills: 0.025
+    - _ParallaxZoomRef: 3
     - _PixelSize: 6
-    - _SkyBands: 64
+    - _RidgeDetailFreq: 2.3
+    - _RidgeDetailSeed: 1.7
+    - _RidgeNoiseSpeed: 0
+    - _SkyBands: 128
     - _SunElevation: 0.6
     - _SunGlow: 0.39
     - _SunGlowSize: 0.644
     - _SunIntensity: 3
+    - _SunScreenScale: 0.9
     - _SunSize: 0.063
+    - _TerrainBase: 0.6
+    - _TerrainPixel: 5.2
+    - _TerrainSeed: 0
+    - _TerrainSoft: 0.004
+    - _TerrainSpeed: 0.02
+    - _TreeBevel: 0.72
+    - _TreeDark: 0.5
+    - _TreeDensity: 0.5
+    - _TreeHeight: 0.14
+    - _TreeOffset: -0.015
+    - _TreeSectors: 53.4
+    - _TreeSeed: 0
+    - _TreeThick: 4.34
+    - _TreeWidth: 0.64
+    - _TwilightStrength: 0.7
+    - _UseGlobalSun: 1
     - _ZWrite: 0
     m_Colors:
-    - _CloudBase: {r: 1, g: 1, b: 1, a: 1}
-    - _CloudFar: {r: 1, g: 1, b: 1, a: 1}
+    - _BevelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CloudBase: {r: 1, g: 0.9887949, b: 0.9025157, a: 1}
+    - _CloudFar: {r: 1, g: 1, b: 0.96540874, a: 1}
     - _CloudLight: {r: 1, g: 1, b: 1, a: 1}
-    - _CloudTop: {r: 1, g: 1, b: 1, a: 1}
+    - _CloudTop: {r: 1, g: 0.9574757, b: 0.7327044, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _FrontColor: {r: 0.32999998, g: 0.39999998, b: 0.33999997, a: 1}
+    - _GrassColor: {r: 0.31999996, g: 0.52, b: 0.21999997, a: 1}
+    - _GrassTipColor: {r: 0.52, g: 0.7, b: 0.29999998, a: 1}
+    - _GroundBotColor: {r: 0.19999996, g: 0.14999998, b: 0.10999996, a: 1}
+    - _GroundTopColor: {r: 0.35999998, g: 0.43999997, b: 0.23999995, a: 1}
+    - _HillBevelColor: {r: 0.72350764, g: 0.84276724, b: 0.7570318, a: 1}
+    - _HillFadeColor: {r: 0.049999982, g: 0.059999965, b: 0.09999997, a: 1}
+    - _HillFarColor: {r: 0.41999996, g: 0.47999996, b: 0.6, a: 1}
+    - _HillNearColor: {r: 0.3278153, g: 0.408805, b: 0.38952175, a: 1}
+    - _MoonColor: {r: 0.90880495, g: 0.9310477, b: 1, a: 1}
+    - _NightAmbient: {r: 0.27607682, g: 0.28041473, b: 0.29559743, a: 1}
+    - _NightHorizon: {r: 0.118784755, g: 0.12480934, b: 0.13836467, a: 1}
+    - _NightZenith: {r: 0.089999996, g: 0.09799997, b: 0.13799995, a: 1}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
-    - _SkyHorizon: {r: 0, g: 0, b: 0, a: 1}
-    - _SkyZenith: {r: 0.532732, g: 0.60673016, b: 0.654088, a: 1}
+    - _SkyHorizon: {r: 0.72, g: 0.82, b: 0.9, a: 1}
+    - _SkyZenith: {r: 0.16, g: 0.35, b: 0.62, a: 1}
     - _SunColor: {r: 1, g: 0.94, b: 0.78, a: 1}
+    - _TreeBevelColor: {r: 0.744037, g: 0.8301887, b: 0.7572264, a: 1}
+    - _TwilightColor: {r: 1, g: 0.62, b: 0.37999994, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

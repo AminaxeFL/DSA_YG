@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class CarNoCollide : MonoBehaviour
@@ -7,7 +7,11 @@ public class CarNoCollide : MonoBehaviour
 
     [SerializeField] private bool rescanEveryFrame;
 
+    [Range(0.05f, 5f)] [SerializeField] private float rescanInterval = 0.25f;
+
     private readonly List<WheelSpinner> cars = new List<WheelSpinner>();
+    private readonly List<Collider2D[]> carColliders = new List<Collider2D[]>();
+    private float rescanTimer;
 
     private void Start()
     {
@@ -17,43 +21,69 @@ public class CarNoCollide : MonoBehaviour
     private void FixedUpdate()
     {
         if (rescanEveryFrame)
+        {
             Rescan();
-        else
-            ApplyIgnores();
+            return;
+        }
+
+        rescanTimer -= Time.fixedDeltaTime;
+
+        if (rescanTimer <= 0f)
+            Rescan();
     }
 
     private void Rescan()
     {
-        cars.Clear();
-        cars.AddRange(FindObjectsByType<WheelSpinner>());
-        ApplyIgnores();
-    }
+        rescanTimer = Mathf.Max(rescanInterval, 0.05f);
 
-    private void ApplyIgnores()
-    {
+        cars.Clear();
+        carColliders.Clear();
+
+        WheelSpinner[] found = FindObjectsByType<WheelSpinner>();
+
+        for (int i = 0; i < found.Length; i++)
+        {
+            if (found[i] == null)
+                continue;
+
+            cars.Add(found[i]);
+            carColliders.Add(CollidersOf(found[i]));
+        }
+
         for (int i = 0; i < cars.Count; i++)
         {
-            Collider2D[] left = CollidersOf(cars[i]);
+            Collider2D[] left = carColliders[i];
+
             if (left.Length == 0)
                 continue;
 
             for (int j = i + 1; j < cars.Count; j++)
             {
-                Collider2D[] right = CollidersOf(cars[j]);
+                Collider2D[] right = carColliders[j];
+
                 if (right.Length == 0)
                     continue;
 
-                foreach (Collider2D a in left)
-                {
-                    if (a == null)
-                        continue;
+                IgnorePair(left, right);
+            }
+        }
+    }
 
-                    foreach (Collider2D b in right)
-                    {
-                        if (b != null && b != a)
-                            Physics2D.IgnoreCollision(a, b, true);
-                    }
-                }
+    private static void IgnorePair(Collider2D[] left, Collider2D[] right)
+    {
+        for (int a = 0; a < left.Length; a++)
+        {
+            Collider2D leftCollider = left[a];
+
+            if (leftCollider == null)
+                continue;
+
+            for (int b = 0; b < right.Length; b++)
+            {
+                Collider2D rightCollider = right[b];
+
+                if (rightCollider != null && rightCollider != leftCollider)
+                    Physics2D.IgnoreCollision(leftCollider, rightCollider, true);
             }
         }
     }
@@ -68,18 +98,18 @@ public class CarNoCollide : MonoBehaviour
         if (car.TryGetComponent(out Rigidbody2D chassis))
             list = new List<Collider2D>(chassis.GetComponents<Collider2D>());
 
-        if (car.wheels != null)
+        foreach (Rigidbody2D wheel in car.GetComponentsInChildren<Rigidbody2D>(true))
         {
-            foreach (Rigidbody2D wheel in car.wheels)
-            {
-                if (wheel == null)
-                    continue;
+            if (wheel == null)
+                continue;
 
-                if (list == null)
-                    list = new List<Collider2D>();
+            if (wheel.GetComponent<WheelJoint2D>() == null)
+                continue;
 
-                list.AddRange(wheel.GetComponents<Collider2D>());
-            }
+            if (list == null)
+                list = new List<Collider2D>();
+
+            list.AddRange(wheel.GetComponents<Collider2D>());
         }
 
         return list != null ? list.ToArray() : NoColliders;

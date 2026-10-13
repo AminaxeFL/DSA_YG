@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraFollow : MonoBehaviour
 {
@@ -16,7 +16,6 @@ public class CameraFollow : MonoBehaviour
 
     [SerializeField] private float lookAheadSpeed = 12f;
 
-    [Header("Зум камеры ок")]
     [Range(0f, 30f)] [SerializeField] private float baseSize = 0f;
 
     [Range(0f, 30f)] [SerializeField] private float zoomOut = 3f;
@@ -25,10 +24,15 @@ public class CameraFollow : MonoBehaviour
 
     [Range(0.02f, 2f)] [SerializeField] private float zoomSmoothTime = 0.35f;
 
+    [Range(0f, 0.5f)] [SerializeField] private float rotationFollow = 0.125f;
+
+    [Range(0.05f, 1.5f)] [SerializeField] private float rotationSmoothTime = 0.4f;
+
     private Camera cam;
     private Rigidbody2D targetBody;
     private Vector2 velocity;
     private float sizeVelocity;
+    private float rotationVelocity;
 
     private void Start()
     {
@@ -40,12 +44,17 @@ public class CameraFollow : MonoBehaviour
         targetBody = target != null ? FindBody(target) : null;
 
         if (target != null)
+        {
             transform.position = DesiredPosition();
+
+            transform.rotation = Quaternion.Euler(0f, 0f, DesiredAngle());
+        }
     }
 
     private void LateUpdate()
     {
         ApplyZoom();
+        ApplyRotation();
 
         if (target == null)
             return;
@@ -71,6 +80,25 @@ public class CameraFollow : MonoBehaviour
             velocity = velocity.normalized * maxSpeed;
 
         transform.position = goal + offsetNow;
+    }
+
+    private void ApplyRotation()
+    {
+        if (target == null || rotationFollow <= 0f)
+            return;
+
+        float wanted = DesiredAngle();
+
+        transform.rotation = Quaternion.Euler(
+            0f,
+            0f,
+            Mathf.SmoothDampAngle(transform.eulerAngles.z, wanted, ref rotationVelocity, rotationSmoothTime)
+        );
+    }
+
+    private float DesiredAngle()
+    {
+        return Mathf.DeltaAngle(0f, target.eulerAngles.z) * rotationFollow;
     }
 
     private void ApplyZoom()

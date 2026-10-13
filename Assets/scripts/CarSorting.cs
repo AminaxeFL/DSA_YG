@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class CarSorting : MonoBehaviour
@@ -20,6 +20,16 @@ public class CarSorting : MonoBehaviour
     public SpriteRenderer springLeft;
 
     public int springDepthOffset = 3;
+
+    public SpriteRenderer kopot;
+
+    public int kopotDepthOffset = 1;
+
+    public string smokeObjectName = "smokeParticles";
+
+    public int smokeDepthOffset = -1;
+
+    public int SmokeSortingOrder => depthOrder + smokeDepthOffset;
 
     private readonly List<SpriteRenderer> bodyRenderers = new List<SpriteRenderer>();
     private readonly List<SpriteRenderer> wheelRenderers = new List<SpriteRenderer>();
@@ -65,6 +75,9 @@ public class CarSorting : MonoBehaviour
         if (springLeft == null)
             springLeft = FindByName(transform, "springLeft");
 
+        if (kopot == null)
+            kopot = FindByName(transform, "kopot");
+
         bodyRenderers.AddRange(GetComponentsInChildren<SpriteRenderer>(true));
 
         foreach (Rigidbody2D wheel in FindWheels())
@@ -76,6 +89,29 @@ public class CarSorting : MonoBehaviour
         RemoveWithChildren(neck);
         RemoveWithChildren(springRight);
         RemoveWithChildren(springLeft);
+        RemoveWithChildren(kopot);
+        RemoveTransformWithChildren(FindTransformByName(transform, smokeObjectName));
+    }
+
+    private void RemoveTransformWithChildren(Transform root)
+    {
+        if (root == null)
+            return;
+
+        foreach (SpriteRenderer r in root.GetComponentsInChildren<SpriteRenderer>(true))
+            bodyRenderers.Remove(r);
+    }
+
+    private static Transform FindTransformByName(Transform root, string target)
+    {
+        if (string.IsNullOrEmpty(target))
+            return null;
+
+        foreach (Transform child in root)
+            if (string.Equals(child.name, target, System.StringComparison.OrdinalIgnoreCase))
+                return child;
+
+        return null;
     }
 
     private static SpriteRenderer FindByName(Transform root, string target)
@@ -122,6 +158,23 @@ public class CarSorting : MonoBehaviour
 
         if (springLeft != null)
             springLeft.sortingOrder = bodyOrder - springDepthOffset;
+
+        if (kopot != null)
+            kopot.sortingOrder = bodyOrder - kopotDepthOffset;
+
+        ApplySmokeDepth(bodyOrder);
+    }
+
+    private void ApplySmokeDepth(int bodyOrder)
+    {
+        Transform smoke = FindTransformByName(transform, smokeObjectName);
+
+        if (smoke == null)
+            return;
+
+        foreach (SpriteRenderer r in smoke.GetComponentsInChildren<SpriteRenderer>(true))
+            if (r != null)
+                r.sortingOrder = bodyOrder + smokeDepthOffset;
     }
 
     private void ReportMissingDriverParts()
@@ -142,8 +195,17 @@ public class CarSorting : MonoBehaviour
     private Rigidbody2D[] FindWheels()
     {
         WheelSpinner spinner = GetComponent<WheelSpinner>();
-        if (spinner != null && spinner.wheels != null && spinner.wheels.Length > 0)
-            return spinner.wheels;
+        if (spinner != null)
+        {
+            var wheelsList = new List<Rigidbody2D>();
+            foreach (Rigidbody2D wheel in spinner.GetComponentsInChildren<Rigidbody2D>(true))
+            {
+                if (wheel != null && wheel.GetComponent<WheelJoint2D>() != null)
+                    wheelsList.Add(wheel);
+            }
+            if (wheelsList.Count > 0)
+                return wheelsList.ToArray();
+        }
 
         Rigidbody2D body = GetComponent<Rigidbody2D>();
         if (body == null)

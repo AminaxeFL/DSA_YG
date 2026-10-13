@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RustWindowShader
+  m_Shader: {fileID: 4800000, guid: d277b8ff24af4414eb99e195970eb175, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords:
+  - _SNAP_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MaskTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _Bevel: 0.4
+    - _Brightness: 1
+    - _Crack: 0
+    - _CrackDark: 0.5
+    - _CrackDepth: 6
+    - _CrackScale: 8.75
+    - _CrackWidth: 0.365
+    - _Highlight: 0.022
+    - _Octaves: 6
+    - _PixelSize: 1
+    - _Rust: 0
+    - _RustPit: 0.5
+    - _Scale: 0.5
+    - _Seed: 0
+    - _Shadow: 0.7
+    - _Snap: 1
+    - _Softness: 0.314
+    - _SunFromSky: 0.55
+    - _Threshold: 0.4
+    - _ZWrite: 0
+    m_Colors:
+    - _BevelColor: {r: 1, g: 1, b: 1, a: 1}
+    - _CrackColor: {r: 0, g: 0, b: 0, a: 1}
+    - _DarkColor: {r: 0, g: 0, b: 0, a: 1}
+    - _LightColor: {r: 1, g: 1, b: 1, a: 1}
+    - _LightDir: {r: -0.707, g: 0.707, b: 0, a: 0}
+    - _RustDark: {r: 0.19999996, g: 0.079999976, b: 0.03, a: 1}
+    - _RustLight: {r: 0.34591186, g: 0.18968137, b: 0.059827466, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
