@@ -1920,6 +1920,61 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &514785275
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 514785277}
+  - component: {fileID: 514785276}
+  m_Layer: 0
+  m_Name: UpgradeTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &514785276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 514785275}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbbbd17a189953b47b71e96cd9f6a31e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CarUpgrade
+  _carDamage: {fileID: 1852122319}
+  _wheelSpinner: {fileID: 1852122313}
+  _upgradeEnginePerLevel: 100
+  _upgradeFuelTankPerLevel: 0
+  _upgradeCarBodyPerLevel: 0
+  _upgradePodveskaPerLevel: 1.5
+  wheels: {fileID: 1852122318}
+  _engineLevel: 1
+  _fuelTankLevel: 1
+  _carBodyLevel: 1
+  _podveskaLevel: 1
+--- !u!4 &514785277
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 514785275}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 23.999, y: 53.73057, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -4122,7 +4177,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1173749092
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5507,7 +5562,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1694976096
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7222,3 +7277,4 @@ SceneRoots:
   - {fileID: 1900000001}
   - {fileID: 1351233080}
   - {fileID: 1173749093}
+  - {fileID: 514785277}
