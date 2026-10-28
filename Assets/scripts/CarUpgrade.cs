@@ -30,8 +30,8 @@ public class CarUpgrade : MonoBehaviour
     {
         if (_engineLevel <= 5)
         {
-            _wheelSpinner.maxSpeed += _upgradeEnginePerLevel * _engineLevel;
             _engineLevel++;
+            _wheelSpinner.maxSpeed += _upgradeEnginePerLevel * _engineLevel;
         }
         else
         {
@@ -43,8 +43,8 @@ public class CarUpgrade : MonoBehaviour
     {
         if (_fuelTankLevel <= 5)
         {
-            _wheelSpinner.maxFuel += _upgradeFuelTankPerLevel * _fuelTankLevel;
             _fuelTankLevel++;
+            _wheelSpinner.maxFuel += _upgradeFuelTankPerLevel * _fuelTankLevel;
         }
         else
         {
@@ -56,8 +56,8 @@ public class CarUpgrade : MonoBehaviour
     {
         if (_carBodyLevel <= 5)
         {
-            _carDamage.maxHp += _upgradeCarBodyPerLevel * _carBodyLevel;
             _carBodyLevel++;
+            _carDamage.maxHp += _upgradeCarBodyPerLevel * _carBodyLevel;
         }
         else
         {
@@ -69,9 +69,9 @@ public class CarUpgrade : MonoBehaviour
     {
         if (_podveskaLevel <= 5)
         {
+            _podveskaLevel++;
             upgradeSuspension.frequency += _upgradePodveskaPerLevel * _podveskaLevel;
             wheels.suspension = upgradeSuspension;
-            _podveskaLevel++;
         }
         else
         {
