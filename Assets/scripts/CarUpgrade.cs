@@ -17,10 +17,10 @@ public class CarUpgrade : MonoBehaviour
     [SerializeField] private WheelJoint2D wheels;
     private JointSuspension2D upgradeSuspension;
     [Header("")]
-     [Range(1, 5)] public int _engineLevel = 0;
-     [Range(1, 5)] public int _fuelTankLevel = 0;
-     [Range(1, 5)] public int _carBodyLevel = 0;
-     [Range(1, 5)] public int _podveskaLevel = 0;
+     [Range(1, 5)] public int _engineLevel = 1;
+     [Range(1, 5)] public int _fuelTankLevel = 1;
+     [Range(1, 5)] public int _carBodyLevel = 1;
+     [Range(1, 5)] public int _podveskaLevel = 1;
 
     void Start()
     {
