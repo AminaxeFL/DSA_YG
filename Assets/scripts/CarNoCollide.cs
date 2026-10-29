@@ -6,7 +6,6 @@ public class CarNoCollide : MonoBehaviour
     private static readonly Collider2D[] NoColliders = new Collider2D[0];
 
     [SerializeField] private bool rescanEveryFrame;
-
     [Range(0.05f, 5f)] [SerializeField] private float rescanInterval = 0.25f;
 
     private readonly List<WheelSpinner> cars = new List<WheelSpinner>();
@@ -43,7 +42,7 @@ public class CarNoCollide : MonoBehaviour
 
         for (int i = 0; i < found.Length; i++)
         {
-            if (found[i] == null)
+            if (!found[i])
                 continue;
 
             cars.Add(found[i]);
@@ -75,14 +74,14 @@ public class CarNoCollide : MonoBehaviour
         {
             Collider2D leftCollider = left[a];
 
-            if (leftCollider == null)
+            if (!leftCollider)
                 continue;
 
             for (int b = 0; b < right.Length; b++)
             {
                 Collider2D rightCollider = right[b];
 
-                if (rightCollider != null && rightCollider != leftCollider)
+                if (rightCollider && rightCollider != leftCollider)
                     Physics2D.IgnoreCollision(leftCollider, rightCollider, true);
             }
         }
@@ -90,9 +89,6 @@ public class CarNoCollide : MonoBehaviour
 
     private static Collider2D[] CollidersOf(WheelSpinner car)
     {
-        if (car == null)
-            return NoColliders;
-
         List<Collider2D> list = null;
 
         if (car.TryGetComponent(out Rigidbody2D chassis))
@@ -100,18 +96,17 @@ public class CarNoCollide : MonoBehaviour
 
         foreach (Rigidbody2D wheel in car.GetComponentsInChildren<Rigidbody2D>(true))
         {
-            if (wheel == null)
+            if (!wheel)
                 continue;
 
-            if (wheel.GetComponent<WheelJoint2D>() == null)
+            if (!wheel.GetComponent<WheelJoint2D>())
                 continue;
 
-            if (list == null)
-                list = new List<Collider2D>();
+            list ??= new List<Collider2D>();
 
             list.AddRange(wheel.GetComponents<Collider2D>());
         }
 
-        return list != null ? list.ToArray() : NoColliders;
+        return list?.ToArray() ?? NoColliders;
     }
 }

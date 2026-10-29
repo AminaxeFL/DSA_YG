@@ -5,25 +5,17 @@ public class SpeedText : MonoBehaviour
 {
     private const float KmhPerUnit = 3.6f;
 
-    private const float RetryInterval = 0.5f;
-
     [SerializeField] private WheelSpinner car;
-
     [SerializeField] private TMP_Text label;
-
     [Min(0f)] [SerializeField] private float metersPerUnit = 1f;
-
     [Range(0, 2)] [SerializeField] private int decimals;
-
     [Min(0f)] [SerializeField] private float smoothTime = 0.1f;
-
     [SerializeField] private string suffix = " км/ч";
 
     private float shownSpeed;
     private float shownVelocity;
     private float lastPrinted;
     private bool printed;
-    private float retryTimer;
     private float powerOfTen = 1f;
     private string numberFormat = "F0";
 
@@ -31,11 +23,14 @@ public class SpeedText : MonoBehaviour
 
     private void Awake()
     {
-        if (label == null)
-            label = GetComponent<TMP_Text>();
+        label ??= GetComponent<TMP_Text>();
+
+        car ??= FindAnyObjectByType<WheelSpinner>();
 
         CacheFormat();
-        FindCar();
+
+        if (!label || !car)
+            enabled = false;
     }
 
     private void OnValidate()
@@ -49,22 +44,6 @@ public class SpeedText : MonoBehaviour
 
     private void Update()
     {
-        if (label == null)
-            return;
-
-        if (car == null)
-        {
-            retryTimer -= Time.deltaTime;
-
-            if (retryTimer <= 0f)
-            {
-                retryTimer = RetryInterval;
-                FindCar();
-            }
-
-            return;
-        }
-
         float kmh = ToKmh(SpeedUnits());
 
         shownSpeed = smoothTime <= 0.0001f
@@ -74,20 +53,11 @@ public class SpeedText : MonoBehaviour
         Print(shownSpeed);
     }
 
-    private void FindCar()
-    {
-        if (car == null)
-            car = FindAnyObjectByType<WheelSpinner>();
-    }
-
     private float SpeedUnits()
     {
         Rigidbody2D chassis = car.Chassis;
 
-        if (chassis != null)
-            return chassis.linearVelocity.magnitude;
-
-        return Mathf.Abs(car.Speed);
+        return chassis ? chassis.linearVelocity.magnitude : Mathf.Abs(car.Speed);
     }
 
     private float ToKmh(float unitsPerSecond)

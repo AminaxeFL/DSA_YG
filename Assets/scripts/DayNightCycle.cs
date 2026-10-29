@@ -7,31 +7,21 @@ public class DayNightCycle : MonoBehaviour
     private static readonly int SunAzElId = Shader.PropertyToID("_SkySunAzEl");
 
     [Range(0f, 24f)] public float hour = 6f;
-
     public bool advance = true;
-
     [Min(1f)] public float daySeconds = 180f;
     [Min(1f)] public float nightSeconds = 150f;
-
     [Range(1f, 23f)] public float dayHours = 12f;
-
     [Range(0.1f, 3.2f)] public float elevationSweep = Mathf.PI;
-
     [Range(-6.2831853f, 6.2831853f)] public float azimuthSweep;
-
     [Range(0f, 6.2831853f)] public float azimuthStart;
-
     [Range(0f, 24f)] public float sunriseHour = 6f;
-
     [Min(0f)] public float smoothTime = 0.4f;
+    [Min(0f)] public float dayIntensity = 1f;
+    [Min(0f)] public float nightIntensity = 0.18f;
 
     [SerializeField] private Light2D globalLight;
     [SerializeField] private Color dayColor = Color.white;
     [SerializeField] private Color nightColor = new Color(0.26f, 0.28f, 0.34f, 1f);
-
-    [Min(0f)] public float dayIntensity = 1f;
-    [Min(0f)] public float nightIntensity = 0.18f;
-
     [SerializeField] private float dayLightLow = -0.25f;
     [SerializeField] private float dayLightHigh = 0.35f;
 
@@ -86,8 +76,7 @@ public class DayNightCycle : MonoBehaviour
 
     private void ResolveGlobalLight()
     {
-        if (globalLight == null)
-            globalLight = FindAnyObjectByType<Light2D>();
+        globalLight ??= FindAnyObjectByType<Light2D>();
     }
 
     private void OnValidate()
@@ -145,22 +134,22 @@ public class DayNightCycle : MonoBehaviour
 
     private void ApplyGlobalLight()
     {
-        if (globalLight == null)
+        if (!globalLight)
             return;
 
         float daylight = Daylight;
 
-        Color c = Color.Lerp(nightColor, dayColor, daylight);
+        Color tint = Color.Lerp(nightColor, dayColor, daylight);
         float intensity = Mathf.Lerp(nightIntensity, dayIntensity, daylight);
 
         if (appliedValid && Mathf.Abs(intensity - appliedIntensity) < 0.001f
-            && (c - appliedColor).maxColorComponent < 0.001f)
+            && (tint - appliedColor).maxColorComponent < 0.001f)
             return;
 
-        globalLight.color = c;
+        globalLight.color = tint;
         globalLight.intensity = intensity;
 
-        appliedColor = c;
+        appliedColor = tint;
         appliedIntensity = intensity;
         appliedValid = true;
 

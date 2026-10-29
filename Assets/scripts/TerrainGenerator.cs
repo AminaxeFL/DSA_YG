@@ -5,49 +5,29 @@ public class TerrainGenerator : MonoBehaviour
 {
 
     [SerializeField] private float heightOffset = 0f;
-
     [SerializeField] private int seed = 12345;
-
     [SerializeField] private float chunkSize = 8f;
-
     [Range(1, 12)] [SerializeField] private int viewDistance = 3;
-
     [SerializeField] private float flatStartRadius = 6f;
-
     [SerializeField] private float sampleStep = 0.025f;
 
     [SerializeField] private float hillHeight = 0.55f;
-
     [SerializeField] private float hillLength = 9f;
-
     [Range(1, 8)] [SerializeField] private int octaves = 3;
-
     [Range(0f, 1f)] [SerializeField] private float octaveGain = 0.5f;
-
     [Min(0f)] [SerializeField] private float flatHeight = 0.07f;
-
     [Min(1f)] [SerializeField] private float reliefLength = 60f;
-
     [Range(0.1f, 4f)] [SerializeField] private float reliefContrast = 1.2f;
 
     [SerializeField] private Color surfaceColor = new Color(0.36f, 0.42f, 0.22f);
-
     [SerializeField] private Color soilColor = new Color(0.33f, 0.24f, 0.15f);
-
     [SerializeField] private Color deepColor = new Color(0.13f, 0.10f, 0.07f);
-
     [SerializeField] private float surfaceThickness = 0.18f;
-
     [SerializeField] private float depthBelow = 10f;
-
     [SerializeField] private int sortingOrder = -100;
-
     [SerializeField] private string groundLayer = "Ground";
-
     [SerializeField] private Texture2D groundTexture;
-
     [SerializeField] private float textureTileSize = 1.5f;
-
     [SerializeField] private Material terrainMaterial;
 
     private readonly Dictionary<int, Chunk> chunks = new Dictionary<int, Chunk>();
@@ -68,20 +48,13 @@ public class TerrainGenerator : MonoBehaviour
 
         WheelSpinner car = FindAnyObjectByType<WheelSpinner>();
 
-        follow = car != null ? car.transform : null;
+        if (car)
+            follow = car.transform;
     }
 
     private void Update()
     {
-        if (follow == null)
-        {
-            WheelSpinner car = FindAnyObjectByType<WheelSpinner>();
-
-            if (car != null)
-                follow = car.transform;
-        }
-
-        float center = follow != null ? follow.position.x : transform.position.x;
+        float center = follow ? follow.position.x : transform.position.x;
 
         int needed = Mathf.Max(1, Mathf.CeilToInt(chunkSize / Mathf.Max(sampleStep, 0.001f)));
 
@@ -107,7 +80,7 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
 
-            if (stale != null)
+            if (stale?.Count > 0)
             {
                 for (int i = 0; i < stale.Count; i++)
                     DestroyChunk(stale[i]);
@@ -119,13 +92,13 @@ public class TerrainGenerator : MonoBehaviour
     {
         foreach (KeyValuePair<int, Chunk> pair in chunks)
         {
-            if (pair.Value.mesh != null)
+            if (pair.Value.mesh)
                 Destroy(pair.Value.mesh);
         }
 
         chunks.Clear();
 
-        if (sharedMaterial != null)
+        if (sharedMaterial)
             Destroy(sharedMaterial);
     }
 
@@ -263,7 +236,7 @@ public class TerrainGenerator : MonoBehaviour
 
         float bottom = lowest - depthBelow;
 
-        bool hasTexture = groundTexture != null;
+        bool hasTexture = groundTexture;
 
         for (int i = 0; i < count; i++)
         {
@@ -344,7 +317,7 @@ public class TerrainGenerator : MonoBehaviour
     {
         Material material;
 
-        if (terrainMaterial != null)
+        if (terrainMaterial)
         {
             material = new Material(terrainMaterial);
         }
@@ -352,7 +325,7 @@ public class TerrainGenerator : MonoBehaviour
         {
             Shader shader = Shader.Find("Sprites/Default");
 
-            if (shader == null)
+            if (!shader)
                 shader = Shader.Find("Universal Render Pipeline/Unlit");
 
             material = new Material(shader);
@@ -360,7 +333,7 @@ public class TerrainGenerator : MonoBehaviour
 
         material.name = "TerrainMaterial";
 
-        if (groundTexture != null)
+        if (groundTexture)
         {
             material.mainTexture = groundTexture;
             material.mainTextureScale = new Vector2(1f / Mathf.Max(textureTileSize, 0.001f), 1f / Mathf.Max(textureTileSize, 0.001f));
@@ -380,10 +353,10 @@ public class TerrainGenerator : MonoBehaviour
         if (!chunks.TryGetValue(index, out Chunk chunk))
             return;
 
-        if (chunk.root != null)
+        if (chunk.root)
             Destroy(chunk.root);
 
-        if (chunk.mesh != null)
+        if (chunk.mesh)
             Destroy(chunk.mesh);
 
         chunks.Remove(index);

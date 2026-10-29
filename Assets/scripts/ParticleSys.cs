@@ -5,21 +5,17 @@ public class ParticleSys : MonoBehaviour
 {
     private const float MinRate = 0.01f;
     private const float MinLifetime = 0.01f;
-
     private const string shaderName = "Diesel/Smoke2D";
 
     private static readonly int PixelSizeId = Shader.PropertyToID("_PixelSize");
 
     public float partRate = 20f;
     public int partMax = 200;
-
     public float startSpeed = 10f;
     public float drag = 3f;
     public float lifetime = 3f;
-
     public float sizeX = 0.15f;
     public float sizeY = 0.15f;
-
     public Color startColor = Color.white;
     public Color endColor = new Color(1f, 1f, 1f, 0f);
     public int fadeSteps = 1;
@@ -27,11 +23,8 @@ public class ParticleSys : MonoBehaviour
     [Range(0f, 1f)] public float colorJitter = 0.25f;
 
     public float spawnRadius = 0f;
-
     public float spreadUp = 0.5f;
-
     public float spreadSide = 0.15f;
-
     public float spreadExp = 0.04f;
 
     [Range(1f, 8f)] public float spreadExpMax = 4f;
@@ -55,12 +48,12 @@ public class ParticleSys : MonoBehaviour
         public int slot;
         public GameObject go;
         public SpriteRenderer renderer;
-        public Color from;
-        public Color to;
+        public Color colorFrom;
+        public Color colorTo;
     }
 
-    private Particle[] particles;
-    private int[] freeSlots;
+    private Particle[] particles = System.Array.Empty<Particle>();
+    private int[] freeSlots = System.Array.Empty<int>();
     private int freeCount;
     private int pooledMax;
     private float partTimer;
@@ -75,19 +68,20 @@ public class ParticleSys : MonoBehaviour
     private int smokeOrder;
     private WheelSpinner car;
 
-    void OnValidate()
+    private void OnValidate()
     {
-        if (partMax < 0) partMax = 0;
+        if (partMax < 0)
+            partMax = 0;
 
         speedForMinAlpha = Mathf.Max(0f, speedForMinAlpha);
     }
 
-    void Start()
+    private void Start()
     {
-        sorting = transform.parent != null ? transform.parent.GetComponent<CarSorting>() : null;
-        car = transform.parent != null ? transform.parent.GetComponent<WheelSpinner>() : null;
+        sorting = transform.parent?.GetComponent<CarSorting>();
+        car = transform.parent?.GetComponent<WheelSpinner>();
 
-        if (sorting != null)
+        if (sorting)
             smokeOrder = sorting.SmokeSortingOrder;
 
         CreateSquareAssets();
@@ -97,11 +91,11 @@ public class ParticleSys : MonoBehaviour
         speedAlpha = alphaAtRest;
     }
 
-    void Update()
+    private void Update()
     {
         EnsurePool();
 
-        if (particles == null)
+        if (particles.Length == 0)
             return;
 
         float life = Mathf.Max(lifetime, MinLifetime);
@@ -109,7 +103,7 @@ public class ParticleSys : MonoBehaviour
         float dt = Time.deltaTime;
         Vector3 emitterPos = transform.position;
 
-        if (squareMaterial != null && pixelSizeSupported)
+        if (squareMaterial && pixelSizeSupported)
             squareMaterial.SetFloat(PixelSizeId, pixelSize);
 
         if ((emitterPos - prevEmitterPos).sqrMagnitude > 1e4f)
@@ -131,7 +125,7 @@ public class ParticleSys : MonoBehaviour
             Mathf.Clamp01(emitterSpeed / Mathf.Max(speedForMinAlpha, 0.01f))
         );
 
-        if (car == null || car.Fuel01 > 0.001f)
+        if (!car || car.Fuel01 > 0.001f)
         {
             float rate = Mathf.Max(partRate, MinRate);
             float interval = 1f / rate;
@@ -145,7 +139,7 @@ public class ParticleSys : MonoBehaviour
             {
                 float frac = Mathf.Clamp01((next - start) / step);
 
-                partOne(life, Vector3.Lerp(prevEmitterPos, emitterPos, frac));
+                SpawnParticle(life, Vector3.Lerp(prevEmitterPos, emitterPos, frac));
 
                 next += interval;
             }
@@ -171,9 +165,10 @@ public class ParticleSys : MonoBehaviour
         }
     }
 
-    private void partOne(float life, Vector3 spawnPos)
+    private void SpawnParticle(float life, Vector3 spawnPos)
     {
-        if (freeCount <= 0) return;
+        if (freeCount <= 0)
+            return;
 
         int freeIndex = freeSlots[--freeCount];
 
@@ -182,6 +177,7 @@ public class ParticleSys : MonoBehaviour
 
         float aRad = angleDeg * Mathf.Deg2Rad;
         float rRad = rotAround * Mathf.Deg2Rad;
+
         Vector3 localOffset = new Vector3(
             Mathf.Sin(aRad) * Mathf.Cos(rRad),
             Mathf.Sin(aRad) * Mathf.Sin(rRad),
@@ -191,63 +187,66 @@ public class ParticleSys : MonoBehaviour
         Quaternion rot = Quaternion.FromToRotation(Vector3.forward, baseDirection.normalized);
         Vector3 worldDir = (rot * localOffset).normalized;
 
-        Particle p = particles[freeIndex];
-        p.active = true;
-        p.velocity = worldDir * startSpeed;
-        p.life = life;
+        Particle particle = particles[freeIndex];
 
-        p.position = spawnPos + Perpendicular(worldDir) * Random.Range(-spawnRadius, spawnRadius);
-        p.from = Jitter(startColor);
-        p.to = Jitter(endColor);
+        particle.active = true;
+        particle.velocity = worldDir * startSpeed;
+        particle.life = life;
+        particle.position = spawnPos + Perpendicular(worldDir) * Random.Range(-spawnRadius, spawnRadius);
+        particle.colorFrom = Jitter(startColor);
+        particle.colorTo = Jitter(endColor);
 
-        p.go.SetActive(true);
-        p.go.transform.position = p.position;
-        p.go.transform.localScale = new Vector3(sizeX, sizeY, 1f);
-        p.renderer.color = WithSpeedAlpha(p.from);
-        particles[freeIndex] = p;
+        particle.go.SetActive(true);
+        particle.go.transform.position = particle.position;
+        particle.go.transform.localScale = new Vector3(sizeX, sizeY, 1f);
+        particle.renderer.color = WithSpeedAlpha(particle.colorFrom);
+
+        particles[freeIndex] = particle;
     }
 
-    private Color WithSpeedAlpha(Color c)
+    private Color WithSpeedAlpha(Color color)
     {
-        c.a *= speedAlpha;
-        return c;
+        color.a *= speedAlpha;
+        return color;
     }
 
-    private void UpdateParticle(ref Particle p, float life, float dt)
+    private void UpdateParticle(ref Particle particle, float life, float dt)
     {
-        p.life -= dt;
-        if (p.life <= 0f)
+        particle.life -= dt;
+
+        if (particle.life <= 0f)
         {
-            p.active = false;
-            p.go.SetActive(false);
-            freeSlots[freeCount++] = p.slot;
+            particle.active = false;
+            particle.go.SetActive(false);
+            freeSlots[freeCount++] = particle.slot;
             return;
         }
 
-        Vector3 flat = new Vector3(p.velocity.x, p.velocity.y, 0f);
+        Vector3 flat = new Vector3(particle.velocity.x, particle.velocity.y, 0f);
 
         if (flat.sqrMagnitude > 1e-6f)
         {
             Vector3 along = flat.normalized;
             Vector3 side = Perpendicular(along);
 
-            p.velocity += side * Random.Range(-spreadUp, spreadUp) * spreadScale * dt;
-            p.velocity += along * Random.Range(-spreadSide, spreadSide) * spreadScale * dt;
+            particle.velocity += side * Random.Range(-spreadUp, spreadUp) * spreadScale * dt;
+            particle.velocity += along * Random.Range(-spreadSide, spreadSide) * spreadScale * dt;
         }
 
-        p.velocity *= Mathf.Max(0f, 1f - drag * dt);
+        particle.velocity *= Mathf.Max(0f, 1f - drag * dt);
 
-        p.position += p.velocity * dt;
-        p.go.transform.position = p.position;
+        particle.position += particle.velocity * dt;
+        particle.go.transform.position = particle.position;
 
-        float progress = Mathf.Clamp01(1f - (p.life / life));
+        float progress = Mathf.Clamp01(1f - (particle.life / life));
 
         int steps = Mathf.Max(fadeSteps, 1);
+
         float t = steps > 1
             ? Mathf.Clamp01(Mathf.Floor(progress * steps) / (steps - 1f))
             : progress;
 
-        p.renderer.color = WithSpeedAlpha(Color.LerpUnclamped(p.from, p.to, t));
+        particle.renderer.color = WithSpeedAlpha(Color.LerpUnclamped(particle.colorFrom, particle.colorTo, t));
     }
 
     private static Vector3 Perpendicular(Vector3 dir)
@@ -262,34 +261,32 @@ public class ParticleSys : MonoBehaviour
         return Vector3.Cross(side, dir).normalized;
     }
 
-    private Color Jitter(Color c)
+    private Color Jitter(Color color)
     {
         if (colorJitter <= 0f)
-            return c;
+            return color;
 
         float k = 1f + Random.Range(-colorJitter, colorJitter);
 
         return new Color(
-            Mathf.Clamp01(c.r * k),
-            Mathf.Clamp01(c.g * k),
-            Mathf.Clamp01(c.b * k),
-            c.a
+            Mathf.Clamp01(color.r * k),
+            Mathf.Clamp01(color.g * k),
+            Mathf.Clamp01(color.b * k),
+            color.a
         );
     }
 
     private void EnsurePool()
     {
         int wanted = Mathf.Max(partMax, 0);
-        if (particles != null && pooledMax == wanted)
+
+        if (pooledMax == wanted)
             return;
 
         DestroyPool();
 
         if (wanted == 0)
-        {
-            pooledMax = 0;
             return;
-        }
 
         particles = new Particle[wanted];
         freeSlots = new int[wanted];
@@ -298,6 +295,7 @@ public class ParticleSys : MonoBehaviour
         for (int i = 0; i < wanted; i++)
         {
             GameObject go = new GameObject($"Particle_{i}");
+
             go.transform.SetParent(transform);
             go.hideFlags = HideFlags.HideInHierarchy;
 
@@ -326,21 +324,19 @@ public class ParticleSys : MonoBehaviour
 
     private void DestroyPool()
     {
-        if (particles != null)
+        for (int i = 0; i < particles.Length; i++)
         {
-            for (int i = 0; i < particles.Length; i++)
-            {
-                if (particles[i].go == null) continue;
+            if (!particles[i].go)
+                continue;
 
-                if (Application.isPlaying)
-                    Destroy(particles[i].go);
-                else
-                    DestroyImmediate(particles[i].go);
-            }
+            if (Application.isPlaying)
+                Destroy(particles[i].go);
+            else
+                DestroyImmediate(particles[i].go);
         }
 
-        particles = null;
-        freeSlots = null;
+        particles = System.Array.Empty<Particle>();
+        freeSlots = System.Array.Empty<int>();
         freeCount = 0;
         pooledMax = 0;
     }
@@ -349,8 +345,12 @@ public class ParticleSys : MonoBehaviour
     {
         Texture2D tex = new Texture2D(4, 4, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
+
         Color[] px = new Color[16];
-        for (int i = 0; i < px.Length; i++) px[i] = Color.white;
+
+        for (int i = 0; i < px.Length; i++)
+            px[i] = Color.white;
+
         tex.SetPixels(px);
         tex.Apply();
 
@@ -359,26 +359,29 @@ public class ParticleSys : MonoBehaviour
 
         Shader shader = Shader.Find(shaderName);
 
-        if (shader == null)
-        {
-            if (Application.isPlaying)
-                Debug.LogWarning($"{name}: шейдер {shaderName} не найден, дым будет квадратами", this);
-
+        if (!shader)
             shader = Shader.Find("Sprites/Default");
-        }
+
+        if (!shader)
+            return;
 
         squareMaterial = new Material(shader);
 
         pixelSizeSupported = squareMaterial.HasProperty(PixelSizeId);
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         DestroyPool();
 
-        if (squareSprite != null) ReleaseObject(squareSprite);
-        if (squareTexture != null) ReleaseObject(squareTexture);
-        if (squareMaterial != null) ReleaseObject(squareMaterial);
+        if (squareSprite)
+            ReleaseObject(squareSprite);
+
+        if (squareTexture)
+            ReleaseObject(squareTexture);
+
+        if (squareMaterial)
+            ReleaseObject(squareMaterial);
 
         squareSprite = null;
         squareTexture = null;
@@ -393,7 +396,7 @@ public class ParticleSys : MonoBehaviour
             DestroyImmediate(obj);
     }
 
-    void OnDrawGizmosSelected()
+    private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawRay(transform.position, baseDirection.normalized * 2f);

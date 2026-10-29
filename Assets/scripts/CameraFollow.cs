@@ -5,27 +5,17 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private Transform target;
 
     [SerializeField] private Vector2 offset = new Vector2(0f, 0.7f);
-
-    [Range(0.5f, 8f)] [SerializeField] private float frequency = 2.2f;
-
-    [Range(0.05f, 0.99f)] [SerializeField] private float dampingRatio = 0.65f;
-
     [SerializeField] private float maxSpeed = 40f;
-
     [SerializeField] private float lookAheadDistance = 2.5f;
-
     [SerializeField] private float lookAheadSpeed = 12f;
 
+    [Range(0.5f, 8f)] [SerializeField] private float frequency = 2.2f;
+    [Range(0.05f, 0.99f)] [SerializeField] private float dampingRatio = 0.65f;
     [Range(0f, 30f)] [SerializeField] private float baseSize = 0f;
-
     [Range(0f, 30f)] [SerializeField] private float zoomOut = 3f;
-
     [Range(1f, 80f)] [SerializeField] private float zoomSpeed = 25f;
-
     [Range(0.02f, 2f)] [SerializeField] private float zoomSmoothTime = 0.35f;
-
     [Range(0f, 0.5f)] [SerializeField] private float rotationFollow = 0.125f;
-
     [Range(0.05f, 1.5f)] [SerializeField] private float rotationSmoothTime = 0.4f;
 
     private Camera cam;
@@ -38,26 +28,21 @@ public class CameraFollow : MonoBehaviour
     {
         cam = GetComponent<Camera>();
 
-        if (cam != null && baseSize <= 0f)
+        if (baseSize <= 0f)
             baseSize = cam.orthographicSize;
 
-        targetBody = target != null ? FindBody(target) : null;
+        target ??= FindAnyObjectByType<WheelSpinner>()?.transform;
 
-        if (target != null)
-        {
-            transform.position = DesiredPosition();
+        targetBody = FindBody(target);
 
-            transform.rotation = Quaternion.Euler(0f, 0f, DesiredAngle());
-        }
+        transform.position = DesiredPosition();
+        transform.rotation = Quaternion.Euler(0f, 0f, DesiredAngle());
     }
 
     private void LateUpdate()
     {
         ApplyZoom();
         ApplyRotation();
-
-        if (target == null)
-            return;
 
         Vector2 goal = DesiredPosition();
         Vector2 deviation = (Vector2)transform.position - goal;
@@ -69,12 +54,13 @@ public class CameraFollow : MonoBehaviour
 
         Vector2 v0 = velocity;
         float decayFactor = Mathf.Exp(-decay * Time.deltaTime);
-        float cos = Mathf.Cos(wd * Time.deltaTime);
-        float sin = Mathf.Sin(wd * Time.deltaTime);
+        float cosT = Mathf.Cos(wd * Time.deltaTime);
+        float sinT = Mathf.Sin(wd * Time.deltaTime);
 
-        Vector2 b = (v0 + decay * deviation) / wd;
-        velocity = decayFactor * (v0 * cos - (w0Sq * deviation + decay * v0) / wd * sin);
-        Vector2 offsetNow = decayFactor * (deviation * cos + b * sin);
+        Vector2 driven = (v0 + decay * deviation) / wd;
+
+        velocity = decayFactor * (v0 * cosT - (w0Sq * deviation + decay * v0) / wd * sinT);
+        Vector2 offsetNow = decayFactor * (deviation * cosT + driven * sinT);
 
         if (velocity.sqrMagnitude > maxSpeed * maxSpeed)
             velocity = velocity.normalized * maxSpeed;
@@ -84,29 +70,22 @@ public class CameraFollow : MonoBehaviour
 
     private void ApplyRotation()
     {
-        if (target == null || rotationFollow <= 0f)
+        if (rotationFollow <= 0f)
             return;
-
-        float wanted = DesiredAngle();
 
         transform.rotation = Quaternion.Euler(
             0f,
             0f,
-            Mathf.SmoothDampAngle(transform.eulerAngles.z, wanted, ref rotationVelocity, rotationSmoothTime)
+            Mathf.SmoothDampAngle(transform.eulerAngles.z, DesiredAngle(), ref rotationVelocity, rotationSmoothTime)
         );
-    }
-
-    private float DesiredAngle()
-    {
-        return Mathf.DeltaAngle(0f, target.eulerAngles.z) * rotationFollow;
     }
 
     private void ApplyZoom()
     {
-        if (cam == null || zoomOut <= 0f)
+        if (zoomOut <= 0f)
             return;
 
-        float speed = targetBody != null ? targetBody.linearVelocity.magnitude : 0f;
+        float speed = targetBody ? targetBody.linearVelocity.magnitude : 0f;
         float t = Mathf.Clamp01(speed / Mathf.Max(zoomSpeed, 0.01f));
 
         float wanted = baseSize + zoomOut * t;
@@ -118,15 +97,15 @@ public class CameraFollow : MonoBehaviour
     {
         Rigidbody2D own = root.GetComponent<Rigidbody2D>();
 
-        if (own != null)
+        if (own)
             return own;
 
         foreach (Rigidbody2D candidate in root.GetComponentsInChildren<Rigidbody2D>())
         {
-            if (candidate == null || candidate.GetComponent<Collider2D>() == null)
+            if (!candidate || !candidate.GetComponent<Collider2D>())
                 continue;
 
-            if (candidate.GetComponent<CircleCollider2D>() != null)
+            if (candidate.GetComponent<CircleCollider2D>())
                 continue;
 
             return candidate;
@@ -140,9 +119,14 @@ public class CameraFollow : MonoBehaviour
         return (Vector2)target.position + offset + LookAheadOffset();
     }
 
+    private float DesiredAngle()
+    {
+        return Mathf.DeltaAngle(0f, target.eulerAngles.z) * rotationFollow;
+    }
+
     private Vector2 LookAheadOffset()
     {
-        if (targetBody == null || lookAheadDistance <= 0f)
+        if (lookAheadDistance <= 0f || !targetBody)
             return Vector2.zero;
 
         Vector2 v = targetBody.linearVelocity;
@@ -152,6 +136,7 @@ public class CameraFollow : MonoBehaviour
             return Vector2.zero;
 
         float t = Mathf.Clamp01(speed / Mathf.Max(lookAheadSpeed, 0.01f));
+
         return v / speed * lookAheadDistance * t;
     }
 }

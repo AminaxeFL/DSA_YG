@@ -7,19 +7,12 @@ public class CarShade : MonoBehaviour
     private static int registryVersion;
 
     [Range(0.01f, 0.5f)] public float shadeStep = 0.1f;
-
     [Range(0f, 1f)] public float shadeMax = 0.8f;
-
     [Range(0.1f, 6f)] public float transitionTime = 3f;
-
     [Range(0.001f, 0.1f)] public float restartEpsilon = 0.02f;
-
     [Range(0.1f, 5f)] public float rowTolerance = 1.5f;
-
     [Range(0f, 60f)] public float neighborRange = 0f;
-
     [Range(0.02f, 2f)] public float recheckInterval = 0.12f;
-
     [Range(0f, 4f)] public float recheckMoveStep = 0.5f;
 
     private struct Part
@@ -48,7 +41,8 @@ public class CarShade : MonoBehaviour
         car = GetComponent<WheelSpinner>();
 
         Transform chassis = FindChassis();
-        bodyRenderer = chassis != null ? chassis.GetComponent<SpriteRenderer>() : null;
+
+        bodyRenderer = chassis?.GetComponent<SpriteRenderer>();
 
         CollectParts(chassis);
     }
@@ -72,12 +66,12 @@ public class CarShade : MonoBehaviour
 
     private Transform FindChassis()
     {
-        if (car != null)
+        if (car)
             return car.transform;
 
-        for (Transform t = transform; t != null; t = t.parent)
+        for (Transform t = transform; t; t = t.parent)
         {
-            if (t.GetComponent<WheelSpinner>() != null && t.GetComponent<Rigidbody2D>() != null)
+            if (t.GetComponent<WheelSpinner>() && t.GetComponent<Rigidbody2D>())
                 return t;
         }
 
@@ -87,20 +81,21 @@ public class CarShade : MonoBehaviour
     private void CollectParts(Transform chassis)
     {
         parts.Clear();
-        if (chassis == null)
+
+        if (!chassis)
             return;
 
         foreach (SpriteRenderer r in chassis.GetComponentsInChildren<SpriteRenderer>(true))
             parts.Add(new Part { renderer = r, baseColor = r.color });
 
-        if (car != null)
+        if (car)
         {
             foreach (Rigidbody2D wheel in car.GetComponentsInChildren<Rigidbody2D>(true))
             {
-                if (wheel == null)
+                if (!wheel)
                     continue;
 
-                if (wheel.GetComponent<WheelJoint2D>() == null)
+                if (!wheel.GetComponent<WheelJoint2D>())
                     continue;
 
                 foreach (SpriteRenderer r in wheel.GetComponentsInChildren<SpriteRenderer>(true))
@@ -172,6 +167,7 @@ public class CarShade : MonoBehaviour
     private int CountAhead()
     {
         Bounds mine = WorldBounds();
+
         if (IsEmpty(mine))
             return 0;
 
@@ -185,7 +181,7 @@ public class CarShade : MonoBehaviour
         {
             CarShade other = Registry[i];
 
-            if (other == null || other == this || !other.isActiveAndEnabled)
+            if (other == this || !other.isActiveAndEnabled)
                 continue;
 
             if (other.MyFrontness() <= myFront)
@@ -200,6 +196,7 @@ public class CarShade : MonoBehaviour
             }
 
             Bounds theirs = other.WorldBounds();
+
             if (IsEmpty(theirs))
                 continue;
 
@@ -215,46 +212,47 @@ public class CarShade : MonoBehaviour
     private void ApplyShade()
     {
         float k = 1f - shade;
-        foreach (Part p in parts)
+
+        foreach (Part part in parts)
         {
-            if (p.renderer == null)
+            if (!part.renderer)
                 continue;
 
-            Color c = p.baseColor;
-            c.r *= k;
-            c.g *= k;
-            c.b *= k;
-            p.renderer.color = c;
+            Color color = part.baseColor;
+            color.r *= k;
+            color.g *= k;
+            color.b *= k;
+            part.renderer.color = color;
         }
     }
 
     private int MyFrontness()
     {
-        return bodyRenderer != null ? bodyRenderer.sortingOrder : 0;
+        return bodyRenderer ? bodyRenderer.sortingOrder : 0;
     }
 
     private Bounds WorldBounds()
     {
-        bool any = false;
-        Bounds b = default;
+        bool hasBounds = false;
+        Bounds bounds = default;
 
-        foreach (Part p in parts)
+        foreach (Part part in parts)
         {
-            if (p.renderer == null || !p.renderer.enabled)
+            if (!part.renderer || !part.renderer.enabled)
                 continue;
 
-            if (!any)
+            if (!hasBounds)
             {
-                b = p.renderer.bounds;
-                any = true;
+                bounds = part.renderer.bounds;
+                hasBounds = true;
             }
             else
             {
-                b.Encapsulate(p.renderer.bounds);
+                bounds.Encapsulate(part.renderer.bounds);
             }
         }
 
-        return b;
+        return bounds;
     }
 
     private static bool IsEmpty(Bounds b)

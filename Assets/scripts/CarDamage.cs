@@ -1,43 +1,25 @@
 ﻿using UnityEngine;
 
 [ExecuteAlways]
-public class CarDamage : MonoBehaviour
+public class CarDamage : PartDamage
 {
-    public const float SliderMax = 1000f;
-
-    [Min(1f)] public float maxHp = 1000f;
-
-    [Range(0f, SliderMax)] public float hp = 1000f;
-
     public SpriteRenderer sprite;
-
     public SpriteRenderer kopot;
 
     [Range(0.01f, 1f)] public float kopotBrokenAt = 0.2f;
 
-    [Range(0f, 1f)] public float rustAtZero = 0.9f;
-    [Range(0f, 1f)] public float crackAtZero = 0.7f;
-
-    [Range(0.25f, 4f)] public float damageBias = 1f;
-
-    public float MaxHp => maxHp;
-    public float Hp01 => Mathf.Clamp01(hp / Mathf.Max(maxHp, 1f));
+    private HingeJoint2D kopotHinge;
+    private FixedJoint2D kopotFixed;
 
     private void Awake()
     {
-        if (sprite == null)
-            sprite = GetComponent<SpriteRenderer>();
+        sprite ??= GetComponent<SpriteRenderer>();
 
-        if (kopot == null)
-            kopot = FindKopot();
+        kopot ??= FindKopot();
 
-        kopotHinge = kopot != null ? kopot.GetComponent<HingeJoint2D>() : null;
-        kopotFixed = kopot != null ? kopot.GetComponent<FixedJoint2D>() : null;
+        kopotHinge = kopot?.GetComponent<HingeJoint2D>();
+        kopotFixed = kopot?.GetComponent<FixedJoint2D>();
     }
-
-    private HingeJoint2D kopotHinge;
-
-    private FixedJoint2D kopotFixed;
 
     private SpriteRenderer FindKopot()
     {
@@ -48,71 +30,24 @@ public class CarDamage : MonoBehaviour
         return null;
     }
 
-    private void OnEnable()
+    protected override void Apply()
     {
-        Apply();
-    }
+        LookValues(out float rust, out float crack);
 
-    private void OnValidate()
-    {
-        maxHp = Mathf.Max(1f, maxHp);
-        hp = Mathf.Clamp(hp, 0f, maxHp);
-        Apply();
-    }
-
-    private void Update()
-    {
-        Apply();
-    }
-
-    public void SetHp(float value)
-    {
-        hp = Mathf.Clamp(value, 0f, maxHp);
-        Apply();
-    }
-
-    public void Damage(float amount)
-    {
-        SetHp(hp - amount);
-    }
-
-    public void Repair(float amount)
-    {
-        SetHp(hp + amount);
-    }
-
-    public void RepairFull()
-    {
-        SetHp(maxHp);
-    }
-
-    private void Apply()
-    {
-        if (sprite == null)
-        {
-            if (!Application.isPlaying)
-                sprite = GetComponent<SpriteRenderer>();
-
-            if (sprite == null)
-                return;
-        }
-
-        float t = DamageLook.Curve(Hp01, damageBias);
-
-        DamageLook.Apply(sprite, DamageLook.RustAt(t, rustAtZero), DamageLook.CrackAt(t, crackAtZero));
-        DamageLook.Apply(kopot, DamageLook.RustAt(t, rustAtZero), DamageLook.CrackAt(t, crackAtZero));
+        DamageLook.Apply(sprite, rust, crack);
+        DamageLook.Apply(kopot, rust, crack);
 
         ApplyKopotLimits();
     }
 
     private void ApplyKopotLimits()
     {
-        if (kopotHinge == null)
+        if (!kopotHinge)
             return;
 
         if (Hp01 <= kopotBrokenAt)
         {
-            if (kopotFixed != null)
+            if (kopotFixed)
                 kopotFixed.enabled = false;
 
             kopotHinge.useLimits = true;
@@ -120,7 +55,7 @@ public class CarDamage : MonoBehaviour
         }
         else
         {
-            if (kopotFixed != null)
+            if (kopotFixed)
                 kopotFixed.enabled = true;
 
             float angle = kopotHinge.jointAngle;

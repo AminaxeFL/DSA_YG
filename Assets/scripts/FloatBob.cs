@@ -4,20 +4,16 @@ public class FloatBob : MonoBehaviour
 {
     [SerializeField] private float bobHeight = 0.2f;
     [SerializeField] private float bobSpeed = 1.5f;
-
     [SerializeField] private float sideOffset = 0.15f;
     [Range(0.5f, 10f)] [SerializeField] private float sideChangeTime = 3f;
-
     [SerializeField] private float maxTilt = 15f;
     [Range(0.5f, 10f)] [SerializeField] private float rotateChangeTime = 4f;
 
     private Vector3 startPos;
     private float phase;
-
     private float sideFrom;
     private float sideTarget;
     private float sideT = 1f;
-
     private float tiltFrom;
     private float tiltTarget;
     private float tiltT = 1f;

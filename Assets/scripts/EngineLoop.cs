@@ -3,22 +3,16 @@
 public class EngineLoop : MonoBehaviour
 {
     [SerializeField] private AudioSource source;
-
     [SerializeField] private WheelSpinner car;
+    [SerializeField] private bool persistAcrossScenes = true;
 
     public float volume = 1f;
-
     public float gainFromSpeed = 1.5f;
-
     public float speedForMaxGain = 40f;
-
     public float volumeSmoothTime = 0.3f;
-
     public float pitchGain = 0.25f;
-
     public float pitchSmoothTime = 0.25f;
-
-    [SerializeField] private bool persistAcrossScenes = true;
+    public float fuelFadeTime = 3f;
 
     private float volumeVelocity;
     private float pitchVelocity;
@@ -27,30 +21,28 @@ public class EngineLoop : MonoBehaviour
 
     private void Awake()
     {
-        if (source == null)
+        if (!source)
             source = GetComponent<AudioSource>();
 
-        if (source == null)
+        if (!source)
             source = gameObject.AddComponent<AudioSource>();
 
         if (persistAcrossScenes)
             DontDestroyOnLoad(gameObject);
 
-        if (car == null)
-            car = FindAnyObjectByType<WheelSpinner>();
+        car ??= FindAnyObjectByType<WheelSpinner>();
 
         SetupSource();
-
         Play();
-        if (source != null)
-            source.volume = 0f;
+
+        source.volume = 0f;
+
+        if (!car)
+            enabled = false;
     }
 
     private void SetupSource()
     {
-        if (source == null)
-            return;
-
         source.loop = true;
         source.playOnAwake = false;
         source.spatialBlend = 0f;
@@ -59,7 +51,7 @@ public class EngineLoop : MonoBehaviour
 
     public void Play()
     {
-        if (source == null || source.clip == null)
+        if (!source.clip)
             return;
 
         SetupSource();
@@ -72,27 +64,16 @@ public class EngineLoop : MonoBehaviour
     {
         Rigidbody2D chassis = car.Chassis;
 
-        if (chassis != null)
-            return chassis.linearVelocity.magnitude;
-
-        return Mathf.Abs(car.Speed);
+        return chassis ? chassis.linearVelocity.magnitude : Mathf.Abs(car.Speed);
     }
 
     private void Update()
     {
-        if (source == null || source.clip == null)
+        if (!source.clip)
             return;
 
         if (!source.isPlaying)
             source.Play();
-
-        if (car == null)
-        {
-            car = FindAnyObjectByType<WheelSpinner>();
-
-            if (car == null)
-                return;
-        }
 
         float t = Mathf.Clamp01(CurrentSpeed() / Mathf.Max(speedForMaxGain, 0.01f));
 
@@ -100,8 +81,7 @@ public class EngineLoop : MonoBehaviour
         float gain = Mathf.Max(gainFromSpeed, 0f);
         float idle = peak / (1f + gain);
 
-        bool hasFuel = car != null && car.Fuel01 > 0.001f;
-        bool running = hasFuel && car != null && car.canGo;
+        bool running = car.Fuel01 > 0.001f && car.canGo;
 
         if (running)
         {
@@ -129,8 +109,8 @@ public class EngineLoop : MonoBehaviour
             }
 
             fuelFadeTimer += Time.deltaTime;
-            float fadeTime = 3f;
-            float fade = 1f - Mathf.Clamp01(fuelFadeTimer / fadeTime);
+
+            float fade = 1f - Mathf.Clamp01(fuelFadeTimer / Mathf.Max(fuelFadeTime, 0.01f));
 
             source.volume = Mathf.SmoothDamp(
                 source.volume,
@@ -145,9 +125,7 @@ public class EngineLoop : MonoBehaviour
                 Mathf.Max(pitchSmoothTime, 0.01f));
 
             if (fade <= 0f && source.volume < 0.01f)
-            {
                 source.Pause();
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿Shader "Diesel/VolumetricClouds"
+Shader "Diesel/VolumetricClouds"
 {
 
     Properties
@@ -263,7 +263,7 @@
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            #define HASH_WRAP 16.0
+            #define HASH_WRAP 65536.0
 
             float2 hash2(float2 p)
             {
@@ -338,11 +338,9 @@
                 if (strength <= 0.0)
                     return float2(0.0, 0.0);
 
-                const float PARALLAX_PERIOD = 4096.0;
                 const float PARALLAX_MAX_Y = 0.06;
 
                 float2 cam = _WorldSpaceCameraPos.xy;
-                cam -= floor(cam / PARALLAX_PERIOD) * PARALLAX_PERIOD;
 
                 float refOrtho = max(_ParallaxZoomRef, 0.0001);
                 float aspect = _ScreenParams.x / max(_ScreenParams.y, 1.0);
@@ -530,33 +528,40 @@
                     return 0.0;
 
                 float sectors = max(2.0, floor(_TreeSectors));
+                float baseCol = floor(p.x * sectors);
+                float mask = 0.0;
 
-                float colIdx = floor(p.x * sectors);
+                for (int d = -1; d <= 1; d++)
+                {
+                    float colIdx = baseCol + (float)d;
 
-                float r0 = frac(sin(colIdx * 127.1 + _TreeSeed * 17.0) * 43758.5453);
-                float r1 = frac(sin(colIdx * 311.7 + _TreeSeed * 9.0) * 43758.5453);
-                float r2 = frac(sin(colIdx * 269.5 + _TreeSeed * 3.0) * 43758.5453);
-                float r3 = frac(sin(colIdx * 183.3 + _TreeSeed * 29.0) * 43758.5453);
+                    float r0 = frac(sin(colIdx * 127.1 + _TreeSeed * 17.0) * 43758.5453);
+                    float r1 = frac(sin(colIdx * 311.7 + _TreeSeed * 9.0) * 43758.5453);
+                    float r2 = frac(sin(colIdx * 269.5 + _TreeSeed * 3.0) * 43758.5453);
+                    float r3 = frac(sin(colIdx * 183.3 + _TreeSeed * 29.0) * 43758.5453);
 
-                if (r0 >= _TreeDensity)
-                    return 0.0;
+                    if (r0 >= _TreeDensity)
+                        continue;
 
-                float cx = (colIdx + 0.5 + (r1 - 0.5) * 0.6) / sectors;
+                    float cx = (colIdx + 0.5 + (r1 - 0.5) * 0.6) / sectors;
 
-                float baseY = RidgeLine(float2(cx, 0.0), _TerrainBase, _HillNearHeight, _HillNearScale, _HillNearRough, _TerrainSeed + 9.0, drift, row) + _TreeOffset;
+                    float baseY = RidgeLine(float2(cx, 0.0), _TerrainBase, _HillNearHeight, _HillNearScale, _HillNearRough, _TerrainSeed + 9.0, drift, row) + _TreeOffset;
 
-                float halfW = max(_TreeWidth, 0.001) * 0.02 * (0.7 + r2 * 0.9);
+                    float halfW = max(_TreeWidth, 0.001) * 0.02 * (0.7 + r2 * 0.9);
 
-                float h = max(_TreeHeight, 0.001) * (0.75 + r3 * 0.5);
+                    float h = max(_TreeHeight, 0.001) * (0.75 + r3 * 0.5);
 
-                float t = (p.y - baseY) / h;
+                    float t = (p.y - baseY) / h;
 
-                if (t <= 0.0 || t > 1.0)
-                    return 0.0;
+                    if (t <= 0.0 || t > 1.0)
+                        continue;
 
-                float halfWAt = max(halfW * lerp(1.0, 0.05, t), 0.001);
+                    float halfWAt = max(halfW * lerp(1.0, 0.05, t), 0.001);
 
-                return step(abs(p.x - cx), halfWAt);
+                    mask = max(mask, step(abs(p.x - cx), halfWAt));
+                }
+
+                return mask;
             }
 
             Varyings Vert(Attributes input)

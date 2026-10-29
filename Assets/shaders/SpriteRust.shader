@@ -1,4 +1,4 @@
-﻿Shader "Diesel/SpriteRust"
+Shader "Diesel/SpriteRust"
 {
     Properties
     {
@@ -271,10 +271,10 @@
                     float2 sx = offX * fj;
                     float2 sy = offY * fj;
 
-                    float aXn = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv - sx).a;
-                    float aXp = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv + sx).a;
-                    float aYn = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv - sy).a;
-                    float aYp = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv + sy).a;
+                    float aXn = SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv - sx, 0).a;
+                    float aXp = SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv + sx, 0).a;
+                    float aYn = SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv - sy, 0).a;
+                    float aYp = SAMPLE_TEXTURE2D_LOD(_MainTex, sampler_MainTex, uv + sy, 0).a;
 
                     float mn = min(min(aXn, aXp), min(aYn, aYp));
 

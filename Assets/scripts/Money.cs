@@ -6,27 +6,22 @@ public class Money : MonoBehaviour
     public static Money Instance { get; private set; }
 
     public float startMoney = 0f;
-
     public float Balance { get; private set; }
 
     [SerializeField] private TMP_Text cashLabel;
-
     [SerializeField] private string cashPrefix = "CASH: ";
 
     private int lastShown = int.MinValue;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (Instance && Instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
-
-        if (cashLabel == null)
-            cashLabel = GetComponent<TMP_Text>();
 
         Balance = startMoney;
 
@@ -57,7 +52,7 @@ public class Money : MonoBehaviour
 
     private void RefreshLabel()
     {
-        if (cashLabel == null)
+        if (!cashLabel)
             return;
 
         int shown = Mathf.RoundToInt(Balance);

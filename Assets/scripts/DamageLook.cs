@@ -25,15 +25,13 @@ public static class DamageLook
 
     public static void Apply(SpriteRenderer sprite, float rust, float crack)
     {
-        if (sprite == null)
-            return;
+        block ??= new MaterialPropertyBlock();
 
-        if (block == null)
-            block = new MaterialPropertyBlock();
+        sprite?.GetPropertyBlock(block);
 
-        sprite.GetPropertyBlock(block);
         block.SetFloat(RustId, rust);
         block.SetFloat(CrackId, crack);
-        sprite.SetPropertyBlock(block);
+
+        sprite?.SetPropertyBlock(block);
     }
 }

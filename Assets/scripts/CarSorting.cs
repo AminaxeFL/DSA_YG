@@ -1,33 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CarSorting : MonoBehaviour
 {
     public int depthOrder = 0;
-
     public int wheelDepthOffset = 1;
-
     public SpriteRenderer helm;
-
     public SpriteRenderer neck;
-
     public int helmDepthOffset = 1;
-
     public int neckDepthOffset = 2;
-
     public SpriteRenderer springRight;
-
     public SpriteRenderer springLeft;
-
     public int springDepthOffset = 3;
-
     public SpriteRenderer kopot;
-
     public int kopotDepthOffset = 1;
-
     public string smokeObjectName = "smokeParticles";
-
     public int smokeDepthOffset = -1;
+    [SerializeField] private float maxWheelDistance = 3f;
 
     public int SmokeSortingOrder => depthOrder + smokeDepthOffset;
 
@@ -49,7 +39,6 @@ public class CarSorting : MonoBehaviour
     {
         CollectRenderers();
         ApplyDepth();
-        ReportMissingDriverParts();
     }
 
     public void SetDepth(int order)
@@ -63,20 +52,11 @@ public class CarSorting : MonoBehaviour
         bodyRenderers.Clear();
         wheelRenderers.Clear();
 
-        if (helm == null)
-            helm = FindByName(transform, "helm");
-
-        if (neck == null)
-            neck = FindByName(transform, "neck");
-
-        if (springRight == null)
-            springRight = FindByName(transform, "springRight");
-
-        if (springLeft == null)
-            springLeft = FindByName(transform, "springLeft");
-
-        if (kopot == null)
-            kopot = FindByName(transform, "kopot");
+        helm ??= FindByName(transform, "helm");
+        neck ??= FindByName(transform, "neck");
+        springRight ??= FindByName(transform, "springRight");
+        springLeft ??= FindByName(transform, "springLeft");
+        kopot ??= FindByName(transform, "kopot");
 
         bodyRenderers.AddRange(GetComponentsInChildren<SpriteRenderer>(true));
 
@@ -95,7 +75,7 @@ public class CarSorting : MonoBehaviour
 
     private void RemoveTransformWithChildren(Transform root)
     {
-        if (root == null)
+        if (!root)
             return;
 
         foreach (SpriteRenderer r in root.GetComponentsInChildren<SpriteRenderer>(true))
@@ -108,7 +88,7 @@ public class CarSorting : MonoBehaviour
             return null;
 
         foreach (Transform child in root)
-            if (string.Equals(child.name, target, System.StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(child.name, target, StringComparison.OrdinalIgnoreCase))
                 return child;
 
         return null;
@@ -118,7 +98,7 @@ public class CarSorting : MonoBehaviour
     {
         foreach (SpriteRenderer renderer in root.GetComponentsInChildren<SpriteRenderer>(true))
         {
-            if (renderer != null && string.Equals(renderer.gameObject.name, target, System.StringComparison.OrdinalIgnoreCase))
+            if (renderer && string.Equals(renderer.gameObject.name, target, StringComparison.OrdinalIgnoreCase))
                 return renderer;
         }
 
@@ -127,7 +107,7 @@ public class CarSorting : MonoBehaviour
 
     private void RemoveWithChildren(SpriteRenderer root)
     {
-        if (root == null)
+        if (!root)
             return;
 
         foreach (SpriteRenderer renderer in root.GetComponentsInChildren<SpriteRenderer>(true))
@@ -140,76 +120,59 @@ public class CarSorting : MonoBehaviour
         int wheelOrder = depthOrder - wheelDepthOffset;
 
         foreach (SpriteRenderer r in bodyRenderers)
-            if (r != null)
-                r.sortingOrder = bodyOrder;
+            SetOrder(r, bodyOrder);
 
         foreach (SpriteRenderer r in wheelRenderers)
-            if (r != null)
-                r.sortingOrder = wheelOrder;
+            SetOrder(r, wheelOrder);
 
-        if (helm != null)
-            helm.sortingOrder = bodyOrder - helmDepthOffset;
-
-        if (neck != null)
-            neck.sortingOrder = bodyOrder - neckDepthOffset;
-
-        if (springRight != null)
-            springRight.sortingOrder = bodyOrder - springDepthOffset;
-
-        if (springLeft != null)
-            springLeft.sortingOrder = bodyOrder - springDepthOffset;
-
-        if (kopot != null)
-            kopot.sortingOrder = bodyOrder - kopotDepthOffset;
+        SetOrder(helm, bodyOrder - helmDepthOffset);
+        SetOrder(neck, bodyOrder - neckDepthOffset);
+        SetOrder(springRight, bodyOrder - springDepthOffset);
+        SetOrder(springLeft, bodyOrder - springDepthOffset);
+        SetOrder(kopot, bodyOrder - kopotDepthOffset);
 
         ApplySmokeDepth(bodyOrder);
+    }
+
+    private static void SetOrder(SpriteRenderer renderer, int order)
+    {
+        if (renderer)
+            renderer.sortingOrder = order;
     }
 
     private void ApplySmokeDepth(int bodyOrder)
     {
         Transform smoke = FindTransformByName(transform, smokeObjectName);
 
-        if (smoke == null)
+        if (!smoke)
             return;
 
         foreach (SpriteRenderer r in smoke.GetComponentsInChildren<SpriteRenderer>(true))
-            if (r != null)
-                r.sortingOrder = bodyOrder + smokeDepthOffset;
-    }
-
-    private void ReportMissingDriverParts()
-    {
-        if (helm == null)
-            Debug.LogWarning("головы нетчё то", this);
-
-        if (neck == null)
-            Debug.LogWarning("шеи нет", this);
-
-        if (springRight == null)
-            Debug.LogWarning("пружины нет (правая)", this);
-
-        if (springLeft == null)
-            Debug.LogWarning("левой пружины нет", this);
+            SetOrder(r, bodyOrder + smokeDepthOffset);
     }
 
     private Rigidbody2D[] FindWheels()
     {
         WheelSpinner spinner = GetComponent<WheelSpinner>();
-        if (spinner != null)
+
+        if (spinner)
         {
             var wheelsList = new List<Rigidbody2D>();
+
             foreach (Rigidbody2D wheel in spinner.GetComponentsInChildren<Rigidbody2D>(true))
             {
-                if (wheel != null && wheel.GetComponent<WheelJoint2D>() != null)
+                if (wheel && wheel.GetComponent<WheelJoint2D>())
                     wheelsList.Add(wheel);
             }
+
             if (wheelsList.Count > 0)
                 return wheelsList.ToArray();
         }
 
         Rigidbody2D body = GetComponent<Rigidbody2D>();
-        if (body == null)
-            return System.Array.Empty<Rigidbody2D>();
+
+        if (!body)
+            return Array.Empty<Rigidbody2D>();
 
         var found = new List<Rigidbody2D>();
 
@@ -217,7 +180,7 @@ public class CarSorting : MonoBehaviour
         {
             Rigidbody2D candidate = circle.attachedRigidbody;
 
-            if (candidate == null || candidate == body)
+            if (!candidate || candidate == body)
                 continue;
 
             if (Vector2.Distance(candidate.position, body.position) > maxWheelDistance)
@@ -229,6 +192,4 @@ public class CarSorting : MonoBehaviour
 
         return found.ToArray();
     }
-
-    private const float maxWheelDistance = 3f;
 }

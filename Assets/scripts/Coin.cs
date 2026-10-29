@@ -3,13 +3,9 @@ using UnityEngine;
 public class Coin : MonoBehaviour
 {
     [SerializeField] private float riseHeight = 1.2f;
-
     [SerializeField] private float riseTime = 0.6f;
-
     [Range(1f, 255f)] [SerializeField] private float alphaStep = 50f;
-
     [SerializeField] private AudioClip pickupClip;
-
     [Range(0f, 1f)] [SerializeField] private float pickupVolume = 0.7f;
 
     private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
@@ -29,41 +25,38 @@ public class Coin : MonoBehaviour
         body = GetComponent<Rigidbody2D>();
         renderer = GetComponent<SpriteRenderer>();
 
-        if (GetComponent<Collider2D>() == null)
+        if (!GetComponent<Collider2D>())
         {
             CircleCollider2D circle = gameObject.AddComponent<CircleCollider2D>();
             circle.isTrigger = true;
             circle.radius = 0.18f;
         }
 
-        WheelSpinner car = FindAnyObjectByType<WheelSpinner>();
-
-        carRoot = car != null ? car.transform.root : null;
+        carRoot = FindAnyObjectByType<WheelSpinner>()?.transform.root;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (collected || carRoot == null)
+        if (collected)
             return;
 
         Rigidbody2D rb = other.attachedRigidbody;
 
-        if (rb == null || rb.transform.root != carRoot)
+        if (!rb || rb.transform.root != carRoot)
             return;
 
         collected = true;
 
-        if (pickupClip != null)
+        if (pickupClip)
             AudioSource.PlayClipAtPoint(pickupClip, transform.position, pickupVolume);
 
-        if (Money.Instance != null)
-            Money.Instance.AddMoney(1f);
+        Money.Instance?.AddMoney(1f);
 
         riseFrom = transform.position;
 
         FloatBob bob = GetComponent<FloatBob>();
 
-        if (bob != null)
+        if (bob)
             bob.enabled = false;
     }
 
@@ -81,7 +74,7 @@ public class Coin : MonoBehaviour
         Vector3 pos = riseFrom;
         pos.y += Mathf.Lerp(0f, riseHeight, easeOut);
 
-        if (body != null)
+        if (body)
             body.position = pos;
         else
             transform.position = pos;
@@ -94,7 +87,7 @@ public class Coin : MonoBehaviour
 
         alpha = 1f - q;
 
-        if (renderer != null)
+        if (renderer)
         {
             block ??= new MaterialPropertyBlock();
             renderer.GetPropertyBlock(block);
